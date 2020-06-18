@@ -43,7 +43,7 @@ class VideoTransf():
 
         # cria arquivo com seguimento
         try:
-            self.record(self.video_name + 'c.' + self.video_format, begin_time, end_time)
+            self.record('videos/' + self.video_name + 'c.' + self.video_format, begin_time, end_time)
         except Exception as ex:
             print(ex)
 
@@ -54,10 +54,10 @@ class VideoTransf():
 
         args:
             video_toappend - caminho do segundo video a ser unido com o primeiro
-"""
+        """
 
         try:
-            rec = self.record(self.video_name + 'd.' + self.video_format, release=False)
+            rec = self.record('videos/' + self.video_name + 'd.' + self.video_format, release=False)
         except Exception as ex:
             print(f'An error occurred during the first video recording:\n{ex}')
 
@@ -79,17 +79,18 @@ class VideoTransf():
         com nomes nome_do_arquivo + 'a' e nome_do_arquiv + 'b' respectivamente
 
         args:
-            split_time - inteiro identificando o tempo de split em milissegundo"""
+            split_time - inteiro identificando o tempo de split em milissegundo
+        """
 
         # primeira parte do split
         try:
-            self.record(self.video_name + 'a.' + self.video_format, 0, split_time)
+            self.record('videos/' + self.video_name + 'a.' + self.video_format, 0, split_time)
         except Exception as ex:
             print(ex)
 
         # segunda parte do split
         try:
-            self.record(self.video_name + 'b.' + self.video_format, split_time)
+            self.record('videos/' + self.video_name + 'b.' + self.video_format, split_time)
         except Exception as ex:
             print(ex)
 
@@ -102,7 +103,8 @@ class VideoTransf():
         args:
             name - string identificando o nome do arquivo a ser criado
             begin_time - inteiro identificando o inicio em milissegundos do seguimento
-            end_time - inteiro identificando o final em milissegundos do seguimento"""
+            end_time - inteiro identificando o final em milissegundos do seguimento
+        """
 
         if not video_writer:
             # formato do video
@@ -116,15 +118,21 @@ class VideoTransf():
 
         # calcula endtime real do video caso 0 seja especificado
         if end_time == 0:
-            end_time = self.video_cap.get(cv.CAP_PROP_FRAME_COUNT)* self.video_cap.get(cv.CAP_PROP_FPS)
+            end_time = self.video_cap.get(cv.CAP_PROP_FRAME_COUNT)/self.video_cap.get(cv.CAP_PROP_FPS)*1000
 
 
+
+        # move para o tempo inicial indicado
+        self.video_cap.set(cv.CAP_PROP_POS_MSEC, begin_time)
 
         # enquanto a captura estiver sobre o tempo delimitado escreve os frames no novo arquivo
         while self.video_cap.get(cv.CAP_PROP_POS_MSEC) < end_time:
+            #print(self.video_cap.get(cv.CAP_PROP_POS_MSEC))
             ret, frame = self.video_cap.read()
+
+            # end of the file
             if not ret:
-                raise Exception("Can't receive frame (stream end?). Exiting ...")
+                break
 
             video_writer.write(frame) # escrita
 
