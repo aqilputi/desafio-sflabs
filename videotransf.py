@@ -27,8 +27,11 @@ class VideoTransf():
         except Exception as ex:
             print(f'An Error occurred while opening the video file:\n{ex}')
 
+        if not self.video_cap.isOpened():
+            raise FileNotFoundError("Wrong file or file path")
 
-    def slice(self, begin_time):
+
+    def slice(self, begin_time, end_time):
         """Utiliza o metodo record para criar um segmento de video
         com nome nome_do_arquivo + 'c'
 
@@ -40,71 +43,106 @@ class VideoTransf():
 
         # cria arquivo com seguimento
         try:
-            self.record(self.video_name + 'c.' + self.video_format, begin_time, end_time)
+            self.record('videos/' + self.video_name + 'c.' + self.video_format, begin_time, end_time)
         except Exception as ex:
             print(ex)
 
         return
     
+    def append(self, video_toappend):
+        """Junta o video com um outro arquivo de video terceiro passado por argumento
+
+        args:
+            video_toappend - caminho do segundo video a ser unido com o primeiro
+        """
+
+        try:
+            rec = self.record('videos/' + self.video_name + 'd.' + self.video_format, release=False)
+        except Exception as ex:
+            print(f'An error occurred during the first video recording:\n{ex}')
+
+
+        try:
+            othervideo = VideoTransf(video_toappend)
+            othervideo.record(video_writer=rec, release=True)
+        except Exception as ex:
+            print(f'An error occurred during the second video appending:\n{ex}')
+        else:
+            othervideo.release()
+
+
+
 
     def split(self, split_time):
-        """Utiliza o metodo record para criar dois videos,
+        """Divide o video em dois e cria dois novos arquivos de video,
         um do inicio ao split_time e o outro do split_time ateh o final,
         com nomes nome_do_arquivo + 'a' e nome_do_arquiv + 'b' respectivamente
 
         args:
-            split_time - inteiro identificando o tempo de split em milissegundo"""
+            split_time - inteiro identificando o tempo de split em milissegundo
+        """
 
         # primeira parte do split
         try:
-            self.record(self.video_name + 'a.' + self.video_format,0 , split_time)
+            self.record('videos/' + self.video_name + 'a.' + self.video_format, 0, split_time)
         except Exception as ex:
             print(ex)
 
         # segunda parte do split
         try:
-            self.record(self.video_name + 'b.' + self.video_format, split_time)
+            self.record('videos/' + self.video_name + 'b.' + self.video_format, split_time)
         except Exception as ex:
             print(ex)
 
         return
         
 
-    def record(self, name, begin_time, end_time=0):
+    def record(self, name=None, begin_time=0, end_time=0, video_writer=None, release=True):
         """Dado um valor inicial e um final, salva um trecho do video com o nome especificado
 
         args:
             name - string identificando o nome do arquivo a ser criado
             begin_time - inteiro identificando o inicio em milissegundos do seguimento
-            end_time - inteiro identificando o final em milissegundos do seguimento"""
+            end_time - inteiro identificando o final em milissegundos do seguimento
+        """
 
-        # formato do video
-        fourcc = cv.VideoWriter_fourcc(*'XVID')
+        if not video_writer:
+            # formato do video
+            fourcc = cv.VideoWriter_fourcc(*'XVID')
+
+            # cria objeto de escrita utilizando os parametros do video de origem
+            video_writer = cv.VideoWriter(name, fourcc,
+                                   self.video_cap.get(cv.CAP_PROP_FPS),
+                                   (int(self.video_cap.get(cv.CAP_PROP_FRAME_WIDTH ))
+                                    ,int(self.video_cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
 
         # calcula endtime real do video caso 0 seja especificado
         if end_time == 0:
-            end_time = self.video_cap.get(cv.CAP_PROP_FRAME_COUNT)* self.video_cap.get(cv.CAP_PROP_FPS)
+            end_time = self.video_cap.get(cv.CAP_PROP_FRAME_COUNT)/self.video_cap.get(cv.CAP_PROP_FPS)*1000
 
 
-        # cria objeto de escrita utilizando os parametros do video de origem
-        a_out = cv.VideoWriter(name, fourcc,
-                               self.video_cap.get(cv.CAP_PROP_FPS),
-                               (int(self.video_cap.get(cv.CAP_PROP_FRAME_WIDTH ))
-                                ,int(self.video_cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
 
+        # move para o tempo inicial indicado
+        self.video_cap.set(cv.CAP_PROP_POS_MSEC, begin_time)
 
-        # enquanto a captura estiver sobre o tempo delimitado escreve os frames no novo arquvo
+        # enquanto a captura estiver sobre o tempo delimitado escreve os frames no novo arquivo
         while self.video_cap.get(cv.CAP_PROP_POS_MSEC) < end_time:
+            #print(self.video_cap.get(cv.CAP_PROP_POS_MSEC))
             ret, frame = self.video_cap.read()
+
+            # end of the file
             if not ret:
-                raise Exception("Can't receive frame (stream end?). Exiting ...")
+                break
 
-            a_out.write(frame) # escrita
+            video_writer.write(frame) # escrita
 
-        #libera objeto de escrita
-        a_out.release()
-
-        return
+        if release == True:
+            #libera objeto de escrita
+            video_writer.release()
+            return
+        else:
+            return video_writer
+        
         
 
     def release(self):
