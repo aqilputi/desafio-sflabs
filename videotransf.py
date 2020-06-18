@@ -28,13 +28,32 @@ class VideoTransf():
             print(f'An Error occurred while opening the video file:\n{ex}')
 
 
-
-    def split(self, split_time):
-        """Utiliza o metodo record para criar dois videos
-        um do inicio ao split_time e o outro do split_time ateh o final
+    def slice(self, begin_time):
+        """Utiliza o metodo record para criar um segmento de video
+        com nome nome_do_arquivo + 'c'
 
         args:
-            split_time - inteiro contendo o tempo de split em milissegundo"""
+            begin_time - inteiro identificando o tempo inicial do seguimento em milissegundos
+            end_time - inteiro identificando o tempo final do seguimento em milissegundo
+
+        """
+
+        # cria arquivo com seguimento
+        try:
+            self.record(self.video_name + 'c.' + self.video_format, begin_time, end_time)
+        except Exception as ex:
+            print(ex)
+
+        return
+    
+
+    def split(self, split_time):
+        """Utiliza o metodo record para criar dois videos,
+        um do inicio ao split_time e o outro do split_time ateh o final,
+        com nomes nome_do_arquivo + 'a' e nome_do_arquiv + 'b' respectivamente
+
+        args:
+            split_time - inteiro identificando o tempo de split em milissegundo"""
 
         # primeira parte do split
         try:
@@ -55,9 +74,9 @@ class VideoTransf():
         """Dado um valor inicial e um final, salva um trecho do video com o nome especificado
 
         args:
-            name - string contendo o nome do arquivo a ser criado
-            begin_time - inteiro contendo o inicio em milissegundos do seguimento
-            end_time - inteiro contendo o final em milissegundos do seguimento"""
+            name - string identificando o nome do arquivo a ser criado
+            begin_time - inteiro identificando o inicio em milissegundos do seguimento
+            end_time - inteiro identificando o final em milissegundos do seguimento"""
 
         # formato do video
         fourcc = cv.VideoWriter_fourcc(*'XVID')
@@ -89,5 +108,6 @@ class VideoTransf():
         
 
     def release(self):
+        """Libera objeto de leitura"""
         self.video_cap.release()
         
