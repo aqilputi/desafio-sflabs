@@ -1,0 +1,67 @@
+[
+    {
+        "video": "1591803600_033.mp4",
+        "task": "split",
+        "params": {
+            "timestamp": "00:01:00"
+        }
+    },
+    {
+        "video": "1591792800_004.mp4",
+        "task": "split",
+        "params": {
+            "timestamp": "00:02:35"
+        }
+    },
+    {
+        "video": "1591891200_051.mp4",
+        "task": "split",
+        "params": {
+            "timestamp": "00:01:03"
+        }
+    },
+    {
+        "video": "2020-06-10_5e6cc740081bb44ed69a2538_1591794000.mp4",
+        "task": "slice",
+        "params": {
+            "timestamps": [
+                "00:04:46",
+                "00:06:54"
+            ]
+        }
+    },
+    {
+        "video": "2020-06-10_5e6cc740081bb44ed69a2538_1591837200.mp4",
+        "task": "slice",
+        "params": {
+            "timestamps": [
+                "00:00:28",
+                "00:03:25"
+            ]
+        }
+    },
+    {
+        "video": "2020-06-10_5e6cc740081bb44ed69a2538_1591804800.mp4",
+        "task": "slice",
+        "params": {
+            "timestamps": [
+                "00:08:10",
+                "00:09:20"
+            ]
+        }
+    },
+    {
+        "video": "1591821600_015.mp4",
+        "task": "append",
+        "params": {
+            "to_append": "1591822800_002.mp4"
+        }
+    },
+    {
+        "video": "1592404800_033.mp4",
+        "task": "append",
+        "params": {
+            "to_append": "1592406000_001.mp4"
+        }
+    }
+]
